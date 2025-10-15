@@ -1,0 +1,9 @@
+{
+  "name": "ai-data-steward-vercel-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {}
+}
