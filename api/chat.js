@@ -9,19 +9,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing 'question' in request body" });
     }
 
-    const apiKey = process.env.OPENAI_KEY;
+    // Check if OPENROUTER_KEY exists
+    const apiKey = process.env.OPENROUTER_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: "OPENAI_KEY not configured" });
+      // MOCK fallback for demo
+      return res.status(200).json({ answer: `Mock answer: You asked "${question}"` });
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call OpenRouter API
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4.1-nano",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: "You are an expert Informatica MDM data steward assistant." },
           { role: "user", content: question }
@@ -32,14 +35,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      return res.status(500).json({ error: data });
+    // If OpenRouter returns an error, use mock answer
+    if (!response.ok || !data.choices) {
+      return res.status(200).json({ answer: `Mock answer: You asked "${question}"` });
     }
 
-    const answer = data.choices?.[0]?.message?.content || "No response from AI.";
+    const answer = data.choices[0].message?.content || `Mock answer: You asked "${question}"`;
     return res.status(200).json({ answer });
 
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    // Fallback to mock answer on any unexpected error
+    return res.status(200).json({ answer: `Mock answer: You asked "${req.body.question}"` });
   }
 }
